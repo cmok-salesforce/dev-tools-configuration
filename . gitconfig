@@ -1,0 +1,166 @@
+[user]
+    name = Chenda MOK
+    email = cmok@salesforce.com
+[core]  
+    editor = vi 
+[alias]
+    st = status
+    ci = commit -v
+	gco = checkout
+	gcob = checkout -b
+	gcoo = !git fetch && git checkout
+	gbr = branch
+	gbrd = branch -d
+	gbrD = branch -D
+	gmerged = branch --merged
+	gdmerged = "git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
+	gst = status
+	gaa = add -A .
+	gcm = commit -m
+	gaacm = !git add -A . && git commit -m
+	gcp = cherry-pick
+	gamend = commit --amend -m
+	gdev = !git checkout dev && git pull origin dev
+	gstaging = !git checkout staging && git pull origin staging
+	gmaster = !git checkout master && git pull origin 
+	gpo = push origin
+	gpod = push origin dev
+	gpos = push origin staging
+	gpom = push origin master
+	gpoh = push origin HEAD
+	gpogm = !git push origin gh-pages && git checkout master && git pull origin master && git rebase gh-pages && git push origin master && git checkout gh-pages
+	gpomg = !git push origin master && git checkout gh-pages && git pull origin gh-pages && git rebase master && git push origin gh-pages && git checkout master
+	gplo = pull origin
+	gplod = pull origin dev
+	gplos = pull origin staging
+	gplom = pull origin master
+	gploh = pull origin HEAD
+	gunstage = reset --soft HEAD^
+	gls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
+	gll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
+	gf = "!git ls-files | grep -i"
+	ggr = grep -Ii
+	gla = "!git config -l | grep alias | cut -c 7-"
+	# Not Mine
+	branch-name = !git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \\(.*\\)/\\1/'
+	export-branch = !git format-patch --stdout $1 > ~/Desktop/`git branch-name`.diff
+	s = status -s
+	d = diff
+	ds = diff --stat
+	dc = diff --cached
+
+	# Logging
+	last = !git log -$1 ${*:2} && : # shows last x commits
+	filelog = log -u
+	fl = !git filelog
+
+	# Logging w/ format
+	l = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cgreen\\ [%cn]" --decorate --date=short
+	ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cgreen\\ [%cn]" --decorate --numstat
+	lds = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cgreen\\ [%cn]" --decorate --date=short
+	ld = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cgreen\\ [%cn]" --decorate --date=relative
+	hist = log --color --pretty=format:\"%C(yellow)%h%C(reset) %s%C(bold red)%d%C(reset) %C(green)%ad%C(reset) %C(blue)[%an]%C(reset)\" --relative-date --decorate
+	tree = log --graph --decorate --pretty=oneline --abbrev-commit # used to view the git history tree
+
+	# Names
+	name = !git symbolic-ref -q HEAD | cut -b 12-
+
+	dlc = diff --cached HEAD^
+	la = "!git config -l | grep alias | cut -c 7-"
+
+	# Stashing
+	sshow = "!f() { git stash show stash^{/$@} -p; }; f" # Like sapply but shows it only
+	sapply = "!f() { git stash apply stash^{/$@}; }; f" # Find stash with name like text
+	spop = "!f() { git stash pop stash@{$(git stashid $@)}; }; f" # Like sapply but pops it off
+	ssave = stash save # saves with name
+	stashid = "!f() { git stash list | grep $@ | head -n 1 | sed -n 's/stash@{\\(.*\\)}.*/\\1/p'; }; f" # only accepts single word, no quotations
+	hide = stash save --include-untracked # hides all files, including untracked files (faster than using --all)
+
+	# Committing
+	c = commit -m # commit with message
+	cp = cherry-pick # alias for cherry-pick
+	all = add -A # add all
+	ac = !git add -A && git commit -m # add all and commit with message
+	amend = !git add -A && git commit --amend --no-edit # amend all to previous commit without changing message
+	medit = commit --amend -m # change previous commit's message to what you type in
+
+	# Special committing (rebase)
+	fix = !git commit --fixup=$@ && git jsquash develop --autosquash --autostash --no-verify -q -f && : # fix everything to the commit provided
+	sfix = !git commit --squash=$@ && git rebase --autosquash --autostash --no-verify -q -f && : # squash everything to the commit provided (includes git commit)
+
+	# Push
+	p = !git push origin $(git name) # push current branch to origin
+	fpush = !git push origin $(git name) -f # force push current branch to origin
+	fp = !git fpush # alias of fpush
+
+	# Deploy
+	staging = !git push heroku-staging $(git name):master -f && git track 'Deployed to staging ' # push current branch to staging, can add more comments after
+	dev = !git push heroku-dev $(git name):master -f && git track 'Deployed to dev ' # push current branch to dev
+	deploy = !git push heroku $(git name):master -f && git track 'Deployed to produciton ' # push current branch to production
+
+	# Squash
+	mbase = !git merge-base $(git name) origin/$1 && :
+	jsquash = !git rebase $(git mbase $1) ${*:2} && : # Like squash will be but without fetching or flags (including interactive mode) and you must pass in the name of the origin branch (no 'origin/') as the first argument
+	squash = !git fetch origin && git rebase $(git mbase $1) --autostash -i  && : # squash relative to any origin branch
+	sq = !git sq # alias for squash
+	sqmaster = !git squash master # squash relative to master
+	sqdev = !git squash dev # squash relative to develop
+	squashlast = "!f(){ git reset --soft HEAD~${1} && git commit --edit -m\"$(git log --format=%B --reverse HEAD..HEAD@{1})\"; };f" # Squash the last x commits; will prompt you with auto-squashed commit messages
+
+	# Updating branch via rebase
+	up = !git fetch origin && git rebase --autostash origin/$1 && : # rebase any origin branch
+	reup = !git up $(git name) # rebase current branch
+	upmaster = !git up master # rebase master
+	updev = !git up develop # rebase develop
+
+	# Rebase/Cherry-pick helpers
+	relast = !git rebase -i HEAD~$1 && : # rebase the last x commits with prompt
+	rc = !git add -A && git rebase --continue # add all and continue with rebasing
+	cpc = !git add -A && git cherry-pick --continue # add all and continue with cherry-picking
+	nvm = rebase --abort
+
+	# Checking out and convinient stashing/moving
+	goto = !git hide remember-goto-$(git name) && git checkout $@ && git spop remember-goto-$(git name) && git track 'Checking out branch '$@ && : # quickly switch branches by stashing current changes just like Github app (which stashes changes to the branch and automatically restores them for you when switching back)
+	goback = !git hide remember-goto-$(git name) && git checkout - && git spop remember-goto-$(git name) && git track 'Checking out branch '$(git name) && : # go back to previous branch and add the working changes back. also look into using the GOBACK_BRANCH var
+	move = !git wmove checkout $@ && git track 'Checking out branch '$@ && :
+
+	# Reset
+	undoc = reset --soft HEAD^
+	wipe = !git add -A && git commit -qm 'WIPE SAVEPOINT' && git reset HEAD~1 --hard # completely reset your branch (including untracked files)
+	fpull = !git reset --hard origin/$(git name)
+
+	# Branching
+	feature = !git hide $@-feature && git fetch && git checkout -b feature/LD-$@ origin/develop && git spop $@-feature && git track 'Creating new feature branch 'feature/LD-$@ && : # create new feature branch name off of develop with the new changes brought over
+	hotfix = !git hide $@-hotfix && git fetch && git checkout -b hotfix/v$@ origin/master && git spop $@-hotfix && git track 'Creating new hotfix branch 'hotfix/v$@ # create new hotfix branch name off of master with the new changes brought over
+	new = !git hide $@-new && git fetch && git checkout -b $@ origin/develop && git spop $@-new && git track 'Creating new branch '$@ # like feature/hotfix but no prefixes
+	delete = branch -D
+
+	# Find branches
+	findbranch = !git branch -a | grep $@ | head -n 1 | sed 's/remotes\\/origin\\///' && : # Finds all branches, including remotes
+	fb = !git findbranch
+	find = !git $1 $(git findbranch ${*:2}) && : # defaults to findbranch
+
+	# Date Flags
+	today = !git $@ --since=6am && :
+	yesterday = !git $@ --since='1 day ago 6am' --until=6am && :
+
+	# Other Flags/Attributes (Used as a prefix to other commands)
+	my = !git $@ --author=$(git config user.name) --author=$(git config user.email) && : # runs the git command (with any args) adding in flags that identify your name and/or your email
+	noscroll = !git --no-pager # Removes scrolling, full page
+	nscroll = !git --no-pager # alias for noscroll
+	force = !git $@ -f && :
+	help = !git help
+
+	# Wrappers (commands that run before and after a provided command and used internally by these aliases)
+	# (shoudn't be used publicly)
+	# these are usually called by other aliases listed here
+	wmove = !git hide $1-wmove && git $@ && git spop $1-wmove && :
+
+	# Misc
+	git = !git
+
+
+	a = add
+	aa = !git add -u && git add -A && git status # adds files then shows you the status
+	done = !git fetch && git rebase --autostash origin/master && git checkout master && git merge @{-1} && rake && git pus
+	g = grep --break --heading --line-number
